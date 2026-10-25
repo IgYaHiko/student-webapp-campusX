@@ -1,3 +1,4 @@
+
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -5,6 +6,8 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
+  color-scheme: light;
+
   --background: oklch(1 0 0);
   --foreground: oklch(0.148 0.004 228.8);
 
@@ -51,7 +54,6 @@
 }
 
 @theme inline {
-  /* Poppins is the default font across the entire application */
   --font-sans: var(--font-poppins);
   --font-heading: var(--font-poppins);
 
@@ -103,16 +105,9 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* System dark-mode preference */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-/* Explicit dark theme */
 .dark {
+  color-scheme: dark;
+
   --background: oklch(0.148 0.004 228.8);
   --foreground: oklch(0.987 0.002 197.1);
 
@@ -156,7 +151,6 @@
   --sidebar-ring: oklch(0.56 0.021 213.5);
 }
 
-/* Global typography and base styles */
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -181,7 +175,6 @@
   }
 }
 
-/* Infinite vertical card animation */
 @keyframes scroll-up {
   from {
     transform: translateY(0);
@@ -204,9 +197,122 @@
   }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+
+
+@keyframes welcome-float-one {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
   }
+  50% {
+    transform: translate3d(-18px, 22px, 0) scale(1.08);
+  }
+}
+
+@keyframes welcome-float-two {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(20px, -16px, 0) scale(0.92);
+  }
+}
+
+
+@keyframes campus-bubble-float {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  25% {
+    transform: translate3d(18px, -20px, 0) scale(1.06);
+  }
+  50% {
+    transform: translate3d(-8px, -32px, 0) scale(0.96);
+  }
+  75% {
+    transform: translate3d(-22px, -10px, 0) scale(1.03);
+  }
+}
+
+@keyframes campus-ring-float {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(12px, -18px, 0) rotate(12deg);
+  }
+}
+
+@keyframes campus-glow-drift {
+  0%, 100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(28px, 18px, 0);
+  }
+}
+
+@keyframes campus-dot-float {
+  0%, 100% {
+    transform: translateY(0);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translateY(-18px);
+    opacity: 1;
+  }
+}
+
+.welcome-bubble {
+  animation: campus-bubble-float 14s ease-in-out infinite;
+  will-change: transform;
+}
+
+.welcome-ring {
+  animation: campus-ring-float 12s ease-in-out infinite;
+  will-change: transform;
+}
+
+.welcome-glow {
+  animation: campus-glow-drift 16s ease-in-out infinite;
+}
+
+.welcome-glow-delay {
+  animation-delay: -6s;
+}
+
+.welcome-glow-slow {
+  animation-duration: 20s;
+  animation-delay: -10s;
+}
+
+.welcome-dot {
+  animation: campus-dot-float 7s ease-in-out infinite;
+}
+
+.welcome-dot-delay {
+  animation-delay: -3s;
+}
+
+.welcome-dot-slow {
+  animation-delay: -5s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .welcome-bubble,
+  .welcome-ring,
+  .welcome-glow,
+  .welcome-dot {
+    animation: none;
+    will-change: auto;
+  }
+}
+
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
