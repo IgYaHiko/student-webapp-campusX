@@ -97,7 +97,7 @@ export default function LoginPage() {
           type="button"
           variant="ghost"
           onClick={handleGoogleLogin}
-           className="w-full flex items-center justify-center gap-3 px-4 py-3 h-auto hover:bg-neutral-900"
+           className="w-full flex items-center justify-center gap-3 px-4 py-3 h-auto "
         >
           {/* Google Logo */}
           <svg

@@ -97,9 +97,9 @@ export default function RegisterPage() {
         {/* Google Sign Up */}
         <Button
           type="button"
-          variant="outline"
+          variant={"ghost"}
           onClick={handleGoogleRegister}
-          className="w-full flex items-center border-none justify-center gap-3 px-4 py-3 h-auto hover:bg-neutral-900"
+          className="w-full flex items-center border-none  justify-center gap-3 px-4 py-3 h-auto "
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

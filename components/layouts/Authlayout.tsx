@@ -22,7 +22,7 @@ export default function AuthLayout({
   footer,
 }: AuthLayoutProps) {
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row text-white">
+    <div className="min-h-screen flex flex-col lg:flex-row ">
       {/* Left Side: Deep Blue Gradient Branding */}
       <div className="hidden lg:flex lg:w-1/2 relative bg-[radial-gradient(ellipse_at_40%_5%,#93c5fd_0%,#3b82f6_22%,#1d4ed8_45%,#172554_70%,#020617_100%)] overflow-hidden">
         {/* Top Logo */}
@@ -31,7 +31,7 @@ export default function AuthLayout({
             
 
             <div>
-              <h1 className="text-xl font-bold font-poppins tracking-tight">
+              <h1 className="text-xl font-bold font-poppins text-white tracking-tight">
                 SaySO
               </h1>
               
@@ -44,7 +44,7 @@ export default function AuthLayout({
           <div className="mx-auto w-full max-w-md">
            
 
-            <h2 className="text-center text-4xl font-semibold tracking-tight xl:text-5xl">
+            <h2 className="text-center text-4xl font-semibold tracking-tight text-white  xl:text-5xl">
               Get Started with Us
             </h2>
 
@@ -106,7 +106,7 @@ export default function AuthLayout({
       </div>
 
                 
-<div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black/30 to-transparent">
+<div className="absolute bottom-0 left-0 right-0 p-8  from-black/30 to-transparent">
   <div className="max-w-sm text-left">
     <svg
       className="h-8 w-8 text-yellow-300 mb-3"
@@ -132,7 +132,7 @@ export default function AuthLayout({
                 
       {/* Right Side: Form Area */}
       <div className="w-full lg:w-1/2 min-h-screen flex items-center justify-center px-6 py-10 sm:px-10">
-        <div className="w-full max-w-[390px]">
+        <div className="w-full max-w-[410px]">
           {/* Mobile Logo */}
           <Link
             href="/"
@@ -156,7 +156,7 @@ export default function AuthLayout({
               {title}
             </h2>
 
-            <p className="mt-3 text-sm leading-6 text-white/75">
+            <p className="mt-3 text-sm leading-6 ">
               {description}
             </p>
           </div>
@@ -164,7 +164,7 @@ export default function AuthLayout({
           {children}
 
           {/* Form Footer */}
-          <div className="relative z-20 mt-4 text-center text-sm text-white/70">
+          <div className="relative z-20 mt-4 text-center text-sm">
             {footer}
           </div>
         </div>

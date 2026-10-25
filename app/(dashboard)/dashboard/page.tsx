@@ -1,30 +1,31 @@
+
 "use client";
 
 import { useAuth } from "@/src/context/AuthContext";
-import { Button } from "@/components/ui/button";
+import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
+import { DashboardWelcome } from "@/components/dashboard/dashboard-welcome";
+import { DashboardStats } from "@/components/dashboard/dashboard-stats";
+import { RecentComplaints } from "@/components/dashboard/recent-complaints";
+import { DashboardQuickActions } from "@/components/dashboard/dashboard-quick-actions";
 
 export default function DashboardPage() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
 
   return (
-    <div className="p-10 max-w-4xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">Welcome, {user?.name}</h1>
-          <p className="text-slate-500">{user?.email} • {user?.role}</p>
-        </div>
-        <Button onClick={logout} variant="outline">
-          Logout
-        </Button>
-      </div>
-      
-      <div className="p-8 border-2 border-dashed rounded-lg text-center mt-10">
-        <h2 className="text-xl font-semibold mb-2">Dashboard Coming Soon</h2>
-        <p className="text-slate-500 mb-4">We are building the analytics and quick actions here.</p>
-        <Button onClick={() => window.location.href = "/complaints"}>
-          Go to My Complaints (Temporary)
-        </Button>
-      </div>
-    </div>
+    <DashboardLayout>
+      <DashboardWelcome name={user?.name} />
+
+      <DashboardStats />
+
+      <section className="grid min-w-0 grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]">
+  <div className="min-w-0">
+    <RecentComplaints />
+  </div>
+
+  <div className="min-w-0">
+    <DashboardQuickActions />
+  </div>
+</section>
+    </DashboardLayout>
   );
 }
