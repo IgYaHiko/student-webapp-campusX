@@ -46,7 +46,8 @@ export async function registerApi(data: any) {
 
 export async function getMyComplaintsApi() {
   const token = getToken();
-  const res = await fetch(`${API_URL}/complaints`, {
+  // Use the new dedicated route!
+  const res = await fetch(`${API_URL}/complaints/me`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -58,7 +59,6 @@ export async function getMyComplaintsApi() {
   if (!res.ok) throw new Error(json.message || "Failed to fetch complaints");
   return json;
 }
-
 export async function getCategoriesApi() {
   const res = await fetch(`${API_URL}/categories`);
   const json = await res.json();

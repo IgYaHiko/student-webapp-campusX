@@ -40,11 +40,6 @@ const navigation = [
     icon: LayoutDashboard,
   },
   {
-    title: "My Complaints",
-    url: "/complaints",
-    icon: FileText,
-  },
-  {
     title: "New Complaint",
     url: "/complaints/new",
     icon: Plus,
