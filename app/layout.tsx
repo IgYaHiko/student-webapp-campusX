@@ -14,8 +14,11 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "SaySo",
+  title: "SaySo - Create Complaints",
   description: "Campus Problem Resolution",
+   icons: {
+    icon: "/logo.png"
+  }
 };
 
 export default function RootLayout({
