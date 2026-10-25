@@ -58,3 +58,27 @@ export async function getMyComplaintsApi() {
   if (!res.ok) throw new Error(json.message || "Failed to fetch complaints");
   return json;
 }
+
+export async function getCategoriesApi() {
+  const res = await fetch(`${API_URL}/categories`);
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || "Failed to fetch categories");
+  return json; // { success: true, data: [{ id, slug, name, ... }] }
+}
+
+export async function createComplaintApi(data: any) {
+  const token = getToken();
+  const res = await fetch(`${API_URL}/complaints`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || "Failed to create complaint");
+
+  return json;
+
+}
