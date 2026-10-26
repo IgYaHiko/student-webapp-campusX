@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
   ArrowLeft,
   Camera,
@@ -8,17 +9,24 @@ import {
   ChevronRight,
   GraduationCap,
   Mail,
-  MapPin,
   Pencil,
   Phone,
   ShieldCheck,
   UserRound,
   X,
 } from "lucide-react";
-import Link from "next/link";
+
+import { useAuth } from "@/src/context/AuthContext";
+import { getMyProfileApi, updateMyProfileApi } from "@/lib/api";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
@@ -27,24 +35,16 @@ type ProfileData = {
   fullName: string;
   email: string;
   phone: string;
-  studentId: string;
-  department: string;
-  course: string;
-  semester: string;
+  branch: string;
   year: string;
-  address: string;
 };
 
-const initialProfile: ProfileData = {
-  fullName: "Alex Morgan",
-  email: "alex.morgan@college.edu",
+const emptyProfile: ProfileData = {
+  fullName: "",
+  email: "",
   phone: "",
-  studentId: "",
-  department: "",
-  course: "Bachelor of Computer Applications",
-  semester: "",
+  branch: "",
   year: "",
-  address: "",
 };
 
 const sections = [
@@ -54,36 +54,115 @@ const sections = [
 ];
 
 export function ProfilePage() {
-  const [profile, setProfile] = useState(initialProfile);
-  const [draft, setDraft] = useState(initialProfile);
+  const { user } = useAuth();
+
+  const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [draft, setDraft] = useState<ProfileData>(emptyProfile);
   const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const mapProfile = (data: any): ProfileData => ({
+    fullName: data.name || "",
+    email: data.email || "",
+    phone: data.phone || "",
+    branch: data.branch || "",
+    year: data.year != null ? String(data.year) : "",
+  });
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchProfile = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const res = await getMyProfileApi();
+        const mappedProfile = mapProfile(res.data);
+
+        if (!cancelled) {
+          setProfile(mappedProfile);
+          setDraft(mappedProfile);
+        }
+      } catch (err: any) {
+        if (!cancelled) {
+          setError(err?.message || "Failed to load your profile.");
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchProfile();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const updateField = (field: keyof ProfileData, value: string) => {
     setDraft((current) => ({ ...current, [field]: value }));
     setSaved(false);
+    setError(null);
   };
 
   const startEditing = () => {
-    setDraft(profile);
+    if (!profile) return;
+
+    setDraft({ ...profile });
     setIsEditing(true);
     setSaved(false);
+    setError(null);
   };
 
   const cancelEditing = () => {
-    setDraft(profile);
+    if (profile) {
+      setDraft({ ...profile });
+    }
+
     setIsEditing(false);
+    setError(null);
   };
 
-  const saveChanges = () => {
-    setProfile(draft);
-    setIsEditing(false);
-    setSaved(true);
+  const saveChanges = async () => {
+    if (!draft) return;
+
+    try {
+      setIsSaving(true);
+      setError(null);
+      setSaved(false);
+
+      await updateMyProfileApi({
+        name: draft.fullName.trim(),
+        email: draft.email.trim(),
+        phone: draft.phone.trim(),
+        branch: draft.branch.trim(),
+        year: draft.year ? Number.parseInt(draft.year, 10) : undefined,
+      });
+
+      const res = await getMyProfileApi();
+      const updatedProfile = mapProfile(res.data);
+
+      setProfile(updatedProfile);
+      setDraft(updatedProfile);
+      setIsEditing(false);
+      setSaved(true);
+    } catch (err: any) {
+      setError(err?.message || "Failed to save profile changes.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const displayed = isEditing ? draft : profile;
+  const displayed = isEditing ? draft : profile ?? emptyProfile;
+
   const initials =
-    profile.fullName
+    (profile?.fullName || user?.name || "")
       .trim()
       .split(/\s+/)
       .filter(Boolean)
@@ -95,7 +174,7 @@ export function ProfilePage() {
     key: keyof ProfileData,
     label: string,
     placeholder: string,
-    options?: { type?: string; readOnly?: boolean }
+    options?: { type?: string }
   ) => (
     <div className="space-y-2" key={key}>
       <Label htmlFor={key}>{label}</Label>
@@ -104,12 +183,41 @@ export function ProfilePage() {
         type={options?.type ?? "text"}
         value={displayed[key]}
         placeholder={placeholder}
-        readOnly={!isEditing || options?.readOnly}
+        readOnly={!isEditing}
         onChange={(event) => updateField(key, event.target.value)}
         className="h-11 rounded-lg read-only:bg-muted/40 read-only:text-muted-foreground"
       />
     </div>
   );
+
+  if (isLoading) {
+    return (
+      <main className="min-h-screen bg-background">
+        <div className="p-10 text-center text-sm text-muted-foreground">
+          Loading profile...
+        </div>
+      </main>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <main className="min-h-screen bg-background">
+        <div className="mx-auto max-w-3xl px-4 py-10">
+          <p className="text-sm text-destructive">
+            {error || "Unable to load your profile."}
+          </p>
+          <Button
+            variant="outline"
+            className="mt-4"
+            onClick={() => window.location.reload()}
+          >
+            Try again
+          </Button>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-background">
@@ -123,6 +231,7 @@ export function ProfilePage() {
               <ArrowLeft className="size-4" />
               Back to dashboard
             </Link>
+
             <div>
               <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
                 My profile
@@ -141,21 +250,41 @@ export function ProfilePage() {
             </Button>
           ) : (
             <div className="flex shrink-0 gap-2">
-              <Button variant="outline" size="icon" onClick={cancelEditing} aria-label="Cancel editing">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={cancelEditing}
+                disabled={isSaving}
+                aria-label="Cancel editing"
+              >
                 <X className="size-4" />
               </Button>
-              <Button onClick={saveChanges} className="gap-2">
+
+              <Button
+                onClick={saveChanges}
+                disabled={isSaving}
+                className="gap-2"
+              >
                 <Check className="size-4" />
-                Save
+                {isSaving ? "Saving..." : "Save"}
               </Button>
             </div>
           )}
         </div>
 
+        {error && (
+          <div
+            role="alert"
+            className="mb-6 rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive"
+          >
+            {error}
+          </div>
+        )}
+
         {saved && (
           <div className="mb-6 flex items-center gap-2 rounded-xl border border-border bg-primary/10 px-4 py-3 text-sm">
             <Check className="size-4 text-primary" />
-            Profile changes saved locally for this preview.
+            Profile changes saved successfully.
           </div>
         )}
 
@@ -165,14 +294,16 @@ export function ProfilePage() {
               <div className="h-24 bg-primary/20">
                 <div className="h-full w-full bg-gradient-to-br from-primary/30 to-transparent" />
               </div>
-              <CardContent className="-mt-12 relative px-6 pb-6">
+
+              <CardContent className="relative -mt-12 px-6 pb-6">
                 <div className="group relative flex size-24 items-center justify-center rounded-2xl border-4 border-card bg-primary text-3xl font-semibold text-primary-foreground shadow-sm">
                   {initials}
+
                   <button
                     type="button"
                     disabled={!isEditing}
                     aria-label="Change profile photo"
-                    title={isEditing ? "Photo upload coming later" : "Edit profile to enable photo options"}
+                    title="Photo upload coming later"
                     className="absolute -bottom-2 -right-2 flex size-8 items-center justify-center rounded-full border border-border bg-background text-foreground shadow-sm disabled:opacity-50"
                   >
                     <Camera className="size-4" />
@@ -182,6 +313,7 @@ export function ProfilePage() {
                 <h2 className="mt-4 break-words text-xl font-semibold">
                   {profile.fullName || "Your name"}
                 </h2>
+
                 <p className="mt-1 break-all text-sm text-muted-foreground">
                   {profile.email || "Your email"}
                 </p>
@@ -214,6 +346,7 @@ export function ProfilePage() {
                 <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
                   <ShieldCheck className="size-5 text-primary" />
                 </div>
+
                 <div className="space-y-1">
                   <p className="text-sm font-medium">Account security</p>
                   <p className="text-xs leading-5 text-muted-foreground">
@@ -225,90 +358,109 @@ export function ProfilePage() {
           </div>
 
           <div className="min-w-0 space-y-6">
-            <Card id="personal" className="scroll-mt-6 rounded-2xl shadow-none">
+            <Card
+              id="personal"
+              className="scroll-mt-6 rounded-2xl shadow-none"
+            >
               <CardHeader className="pb-4">
                 <div className="flex items-start gap-3">
                   <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
                     <UserRound className="size-5 text-primary" />
                   </div>
+
                   <div>
-                    <CardTitle className="text-base">Personal information</CardTitle>
+                    <CardTitle className="text-base">
+                      Personal information
+                    </CardTitle>
                     <CardDescription className="mt-1">
                       Your basic identity details.
                     </CardDescription>
                   </div>
                 </div>
               </CardHeader>
+
               <CardContent className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                 {field("fullName", "Full name", "Enter your full name")}
-                {field("studentId", "Student ID", "Enter your student ID", { readOnly: true })}
+                {field("email", "Email address", "you@college.edu", {
+                  type: "email",
+                })}
               </CardContent>
             </Card>
 
-            <Card id="academic" className="scroll-mt-6 rounded-2xl shadow-none">
+            <Card
+              id="academic"
+              className="scroll-mt-6 rounded-2xl shadow-none"
+            >
               <CardHeader className="pb-4">
                 <div className="flex items-start gap-3">
                   <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
                     <GraduationCap className="size-5 text-primary" />
                   </div>
+
                   <div>
-                    <CardTitle className="text-base">Academic details</CardTitle>
+                    <CardTitle className="text-base">
+                      Academic details
+                    </CardTitle>
                     <CardDescription className="mt-1">
-                      Your course and current academic placement.
+                      Your branch and current academic year.
                     </CardDescription>
                   </div>
                 </div>
               </CardHeader>
+
               <CardContent className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                {field("department", "Department", "Enter your department")}
-                {field("course", "Course / programme", "Enter your course")}
-                {field("semester", "Current semester", "e.g. Semester 5")}
-                {field("year", "Academic year", "e.g. 2026–2027")}
+                {field("branch", "Branch", "Enter your branch")}
+                {field("year", "Year", "Enter your academic year", {
+                  type: "number",
+                })}
               </CardContent>
             </Card>
 
-            <Card id="contact" className="scroll-mt-6 rounded-2xl shadow-none">
+            <Card
+              id="contact"
+              className="scroll-mt-6 rounded-2xl shadow-none"
+            >
               <CardHeader className="pb-4">
                 <div className="flex items-start gap-3">
                   <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
-                    <Mail className="size-5 text-primary" />
+                    <Phone className="size-5 text-primary" />
                   </div>
+
                   <div>
-                    <CardTitle className="text-base">Contact information</CardTitle>
+                    <CardTitle className="text-base">
+                      Contact information
+                    </CardTitle>
                     <CardDescription className="mt-1">
-                      Details used to contact you about your account.
+                      Contact details associated with your account.
                     </CardDescription>
                   </div>
                 </div>
               </CardHeader>
+
               <CardContent className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                {field("email", "Email address", "you@college.edu", { type: "email" })}
-                {field("phone", "Phone number", "Enter your phone number", { type: "tel" })}
-                <div className="space-y-2 sm:col-span-2">
-                  <Label htmlFor="address">
-                    <MapPin className="mr-1 inline size-3.5 text-muted-foreground" />
-                    Address
-                  </Label>
-                  <Input
-                    id="address"
-                    value={displayed.address}
-                    placeholder="Enter your address (optional)"
-                    readOnly={!isEditing}
-                    onChange={(event) => updateField("address", event.target.value)}
-                    className="h-11 rounded-lg read-only:bg-muted/40 read-only:text-muted-foreground"
-                  />
-                </div>
+                {field("phone", "Phone number", "Enter your phone number", {
+                  type: "tel",
+                })}
               </CardContent>
             </Card>
 
             {isEditing && (
               <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-                <Button variant="outline" onClick={cancelEditing}>
+                <Button
+                  variant="outline"
+                  onClick={cancelEditing}
+                  disabled={isSaving}
+                >
                   Cancel
                 </Button>
-                <Button onClick={saveChanges} className="gap-2">
+
+                <Button
+                  onClick={saveChanges}
+                  disabled={isSaving}
+                  className="gap-2"
+                >
                   <Check className="size-4" />
-                  Save changes
+                  {isSaving ? "Saving..." : "Save changes"}
                 </Button>
               </div>
             )}
