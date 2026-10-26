@@ -49,18 +49,16 @@ export function DashboardNavbar() {
       <SidebarTrigger />
 
       <DropdownMenu>
-        <DropdownMenuTrigger>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="size-10 rounded-full"
-            aria-label="Open profile menu"
-          >
-            <Avatar className="size-9">
-              <AvatarFallback>{initials}</AvatarFallback>
-            </Avatar>
-          </Button>
-        </DropdownMenuTrigger>
+       <DropdownMenuTrigger
+  className="flex size-9 items-center justify-center rounded-full outline-none transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring"
+  aria-label="Open profile menu"
+>
+  <Avatar className="size-9">
+    <AvatarFallback className="bg-muted text-sm text-muted-foreground">
+      {initials || "U"}
+    </AvatarFallback>
+  </Avatar>
+</DropdownMenuTrigger>
 
         <DropdownMenuContent align="end" className="w-64">
           {/* User details */}
