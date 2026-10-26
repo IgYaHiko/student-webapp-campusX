@@ -1,3 +1,6 @@
+import { toast } from "sonner";
+import { json } from "zod";
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
 // Helper to get the token from local storage
@@ -81,4 +84,38 @@ export async function createComplaintApi(data: any) {
 
   return json;
 
+}
+
+
+// ---- profile apis  ---
+export async function getMyProfileApi() {
+   try {
+    const token = getToken();
+    const res = await fetch(`${API_URL}/student/me`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || "Failed to fetch profile");
+  return json; 
+   }catch(error) {
+    toast.error("No student data!");
+   }
+   
+} 
+
+export async function updateMyProfileApi(data: any) {
+  const token = getToken();
+  const res = await fetch(`${API_URL}/student/update-me`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  const jsonData = await res.json();
+  if(!res.ok) throw new Error("Failed to update profile");
+
+  return json;
 }
