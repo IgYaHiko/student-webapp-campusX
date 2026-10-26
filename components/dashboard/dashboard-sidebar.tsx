@@ -25,6 +25,8 @@ import {
 import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
 import { PRODUCT_IMAGES } from "@/public/image/image";
+import { useState } from "react";
+import { NotificationModal } from "../notification/notification";
 
 const navigation = [
   {
@@ -41,9 +43,11 @@ const navigation = [
 
 export function DashboardSidebar() {
   const pathname = usePathname();
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const { logout } = useAuth();
 
   return (
+    <>
     <Sidebar collapsible="icon" variant="sidebar">
       <SidebarHeader className="border-none p-2 group-data-[collapsible=icon]:items-center">
         <Link
@@ -122,7 +126,7 @@ export function DashboardSidebar() {
 
             <SidebarMenuItem>
               <SidebarMenuButton
-                
+                 onClick={() => setNotificationsOpen(true)}
                 isActive={pathname === "/notifications"}
                 tooltip="Notifications"
               >
@@ -156,5 +160,11 @@ export function DashboardSidebar() {
 
       <SidebarRail />
     </Sidebar>
+
+    <NotificationModal
+      open={notificationsOpen}
+      onOpenChange={setNotificationsOpen}
+/>
+    </>
   );
 }
