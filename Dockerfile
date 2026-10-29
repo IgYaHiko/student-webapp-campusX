@@ -6,12 +6,8 @@ WORKDIR /app
 
 COPY package.json package-lock.json ./
 
+# Install dependencies, including platform-specific optional packages
 RUN npm ci --include=optional
-
-# Explicitly install Linux ARM64 GNU native bindings
-RUN npm install --no-save --package-lock=false --include=optional \
-    lightningcss-linux-arm64-gnu@1.32.0 \
-    @tailwindcss/oxide-linux-arm64-gnu@4.3.3
 
 
 # ---------- Development ----------
@@ -40,6 +36,7 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
 COPY --from=deps /app/node_modules ./node_modules
+
 COPY . .
 
 RUN npm run build
