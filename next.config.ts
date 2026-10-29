@@ -1,8 +1,9 @@
-
 import type { NextConfig } from "next";
 
+const isCloudflareBuild = process.env.BUILD_TARGET === "cloudflare";
+
 const nextConfig: NextConfig = {
-  output: "standalone",
+  ...(isCloudflareBuild ? {} : { output: "standalone" as const }),
 
   experimental: {
     agentFeedback: true,
