@@ -72,7 +72,7 @@ export default function LoginPage() {
       description="Enter your details to access your student account."
       footer={
         <>
-          Don't have an account?{" "}
+         <p>Don&apos;t have an account?</p>
           <Link
             href="/register"
             className="font-semibold text-primary underline-offset-4 hover:underline"

@@ -56,7 +56,7 @@ export function NewComplaintDialog() {
     formState: { errors },
   } = useForm<
     z.input<typeof createComplaintSchema>,
-    any,
+    unknown,
     CreateComplaintInput
   >({
     resolver: zodResolver(createComplaintSchema),

@@ -1,5 +1,5 @@
 export type ProfileData = {
-  fullName: string;
+  fullName?: string;
   email: string;
   phone: string;
   branch: string;

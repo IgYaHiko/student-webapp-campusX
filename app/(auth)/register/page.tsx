@@ -31,7 +31,7 @@ export default function RegisterPage() {
     formState: { errors },
   } = useForm<
   import("zod").z.input<typeof registerSchema>,
-  any,
+  unknown,
   RegisterInput
 >({
   resolver: zodResolver(registerSchema),
