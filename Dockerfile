@@ -1,33 +1,57 @@
-# ---------- Stage 1: Dependencies ----------
-FROM node:22-alpine AS deps
-WORKDIR /app
-COPY package.json package-lock.json* ./
-RUN npm ci
 
-# ---------- Stage 2: Development (Hot Reload) ----------
-FROM node:22-alpine AS development
+# ---------- Dependencies ----------
+FROM node:22-alpine AS deps
+
 WORKDIR /app
+
+COPY package.json package-lock.json ./
+
+RUN npm ci --include=optional
+
+
+# ---------- Development ----------
+FROM node:22-alpine AS development
+
+WORKDIR /app
+
+ENV NODE_ENV=development
+
 COPY --from=deps /app/node_modules ./node_modules
+
 COPY . .
+
 EXPOSE 3000
+
 CMD ["npm", "run", "dev"]
 
-# ---------- Stage 3: Builder (Compile for Prod) ----------
+
+# ---------- Production Build ----------
 FROM node:22-alpine AS builder
+
 WORKDIR /app
+
+ENV NEXT_TELEMETRY_DISABLED=1
+
 COPY --from=deps /app/node_modules ./node_modules
+
 COPY . .
-# If you have environment variables needed at build time, set them here
-# ENV NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
+
 RUN npm run build
 
-# ---------- Stage 4: Production Runner ----------
+
+# ---------- Production Runtime ----------
 FROM node:22-alpine AS production
+
 WORKDIR /app
+
 ENV NODE_ENV=production
-# Next.js standalone mode copies only necessary files
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV HOSTNAME=0.0.0.0
+
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
+
 EXPOSE 3000
+
 CMD ["node", "server.js"]

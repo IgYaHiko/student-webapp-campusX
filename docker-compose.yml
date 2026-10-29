@@ -1,15 +1,30 @@
+
 services:
   client:
     build:
       context: .
+      dockerfile: Dockerfile
       target: development
+
+    image: student-webapp-client:latest
     container_name: campusfix-client
+
     ports:
       - "3000:3000"
+
     environment:
-      - NODE_ENV=development
-      - NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
+      NODE_ENV: development
+      NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1
+
     volumes:
-      - ./src:/app/src
-      - ./public:/app/public
+      - .:/app
+      - client_node_modules:/app/node_modules
+      - client_next_cache:/app/.next
+
     command: npm run dev
+
+    restart: unless-stopped
+
+volumes:
+  client_node_modules:
+  client_next_cache:
