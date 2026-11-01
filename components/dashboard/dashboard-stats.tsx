@@ -8,7 +8,7 @@ import {
   CircleAlert,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { getMyComplaintsApi } from "@/lib/api";
+import { getMyComplaintsApi } from "@/lib/api"; // Ensure this path is correct
 
 type Complaint = {
   status: string;
@@ -50,7 +50,7 @@ const statCards = [
   {
     key: "pending",
     label: "Pending",
-    note: "Awaiting a response",
+    note: "Awaiting action",
     icon: CircleAlert,
   },
 ] as const;
@@ -60,16 +60,15 @@ function calculateStats(complaints: Complaint[]): ComplaintStats {
     (stats, complaint) => {
       stats.total++;
 
+      // Normalize the status from the backend
       const status = complaint.status.toLowerCase().replace(/[\s-]+/g, "_");
 
       if (status === "resolved" || status === "closed") {
         stats.resolved++;
-      } else if (
-        status === "in_progress" ||
-        status === "inprogress"
-      ) {
+      } else if (status === "in_progress") {
         stats.inProgress++;
-      } else if (status === "pending" || status === "open") {
+      } else if (status === "open" || status === "assigned" || status === "rejected") {
+        // Open, Assigned, and Rejected are all considered "Pending" for the student's view
         stats.pending++;
       }
 
@@ -89,14 +88,20 @@ export function DashboardStats() {
 
     async function fetchStats() {
       try {
+        // Assuming getMyComplaintsApi returns { success: true, data: [...] }
         const response = await getMyComplaintsApi();
+        
+        console.log("API Response in Dashboard:", response); // Debugging line
 
-        // Supports either an array response or { data: [...] }.
-        const complaints: Complaint[] = Array.isArray(response.data)
-          ? response.data
-          : Array.isArray(response.data?.data)
-            ? response.data.data
-            : [];
+        // Extract the array safely
+        let complaints: Complaint[] = [];
+        if (Array.isArray(response)) {
+            complaints = response;
+        } else if (response && Array.isArray(response.data)) {
+            complaints = response.data;
+        } else if (response && response.data && Array.isArray(response.data.data)) {
+            complaints = response.data.data;
+        }
 
         if (!cancelled) {
           setStats(calculateStats(complaints));
