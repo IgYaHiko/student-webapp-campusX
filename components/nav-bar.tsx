@@ -34,7 +34,7 @@ export function SimpleNavbar() {
 
   const handleLogout = async () => {
     await logout();
-    router.replace("/login");
+    router.replace("/student-client/login");
   };
 
   const displayName =

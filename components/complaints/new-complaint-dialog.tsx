@@ -78,23 +78,25 @@ export function NewComplaintDialog() {
     fetchCategories();
   }, []);
 
-  const onSubmit = async (data: CreateComplaintInput) => {
-    setIsLoading(true);
-    setError(null);
+const onSubmit = async (data: CreateComplaintInput) => {
+  setIsLoading(true);
+  setError(null);
 
-    try {
-      await createComplaintApi(data);
-      router.replace("/dashboard");
-      router.refresh();
-    } catch (err: unknown) {
-      setError(
-        err instanceof Error ? err.message : "Failed to submit complaint."
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  try {
+    await createComplaintApi(data);
 
+    // Close the intercepted modal and return to the dashboard.
+    router.back();
+  } catch (err: unknown) {
+    setError(
+      err instanceof Error
+        ? err.message
+        : "Failed to submit complaint."
+    );
+  } finally {
+    setIsLoading(false);
+  }
+};
   const closeDialog = () => {
     if (!isLoading) router.back();
   };

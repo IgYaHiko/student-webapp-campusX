@@ -48,7 +48,8 @@ export function DashboardSidebar() {
 
   return (
     <>
-    <Sidebar collapsible="icon" variant="sidebar">
+    <Sidebar  collapsible="none"
+  className="h-svh min-h-svh">
       <SidebarHeader className="border-none p-2 group-data-[collapsible=icon]:items-center">
         <Link
           href="/dashboard"

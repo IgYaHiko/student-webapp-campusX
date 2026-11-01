@@ -87,22 +87,22 @@ export async function createComplaintApi(data: any) {
 }
 
 
-// ---- profile apis  ---
 export async function getMyProfileApi() {
-   try {
-    const token = getToken();
-    const res = await fetch(`${API_URL}/student/me`, {
+  const token = getToken();
+  // 1. Fixed URL to /students/me (plural)
+  const res = await fetch(`${API_URL}/student/me`, {
     headers: { Authorization: `Bearer ${token}` },
   });
-  const json = await res.json();
-  if (!res.ok) throw new Error(json.message || "Failed to fetch profile");
-  return json; 
-   }catch(error) {
-    toast.error("No student data!");
-   }
-   
-} 
 
+  const json = await res.json();
+  
+  // 2. Throw the error so the component's try/catch can handle it
+  if (!res.ok) {
+    throw new Error(json.message || "Failed to fetch profile");
+  }
+
+  return json; // Returns { success: true, data: { name, email, ... } }
+}
 export async function updateMyProfileApi(data: any) {
   const token = getToken();
   const res = await fetch(`${API_URL}/student/update-me`, {
@@ -117,5 +117,19 @@ export async function updateMyProfileApi(data: any) {
   const jsonData = await res.json();
   if(!res.ok) throw new Error("Failed to update profile");
 
+  return json;
+}
+
+
+export async function deleteComplaintApi(complaintId: number) {
+  const token = getToken();
+  const res = await fetch(`${API_URL}/complaints/${complaintId}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || "Failed to delete complaint");
   return json;
 }
