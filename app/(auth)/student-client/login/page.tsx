@@ -49,7 +49,7 @@ export default function LoginPage() {
       }
 
       login(res.token, res.user);
-      router.push("/dashboard");
+      router.push("/student-client/dashboard");
     } catch (err: unknown) {
       setError(
         err instanceof Error

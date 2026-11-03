@@ -43,7 +43,7 @@ export default function RegisterPage() {
     try {
       const res = await registerApi(data);
       setToken(res.token);
-      router.push("/dashboard");
+      router.push("/student-client/dashboard");
     } catch (err: unknown) {
       setError(
         err instanceof Error

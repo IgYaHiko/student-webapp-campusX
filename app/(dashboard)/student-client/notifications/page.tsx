@@ -11,7 +11,7 @@ export default function NotificationsPage() {
       open={true}
       onOpenChange={(open) => {
         if (!open) {
-          router.push("/dashboard");
+          router.push("/student-client/dashboard");
         }
       }}
     />
