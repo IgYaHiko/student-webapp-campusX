@@ -1,3 +1,4 @@
+import { UpdateComplaintPayload } from "@/types/complaints/types";
 import { toast } from "sonner";
 import { json } from "zod";
 
@@ -131,5 +132,37 @@ export async function deleteComplaintApi(complaintId: number) {
   });
   const json = await res.json();
   if (!res.ok) throw new Error(json.message || "Failed to delete complaint");
+  return json;
+}
+
+export async function updateComplaintApi(
+  complaintId: number,
+  data: UpdateComplaintPayload
+) {
+  const token = getToken();
+
+  console.log("Complaint ID:", complaintId);
+  console.log("Update payload:", data);
+
+  const body = JSON.stringify(data);
+
+  console.log("Serialized request body:", body);
+
+  const res = await fetch(`${API_URL}/complaints/${complaintId}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body,
+  });
+
+  const json = await res.json();
+
+  if (!res.ok) {
+    console.error("Update API failed:", json);
+    throw new Error(json.message || "Failed to update complaint");
+  }
+
   return json;
 }
