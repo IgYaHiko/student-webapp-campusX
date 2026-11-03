@@ -225,7 +225,7 @@ export function ProfilePage() {
         <div className="mb-8 flex items-center justify-between gap-4">
           <div className="space-y-2">
             <Link
-              href="/dashboard"
+              href="/student-client/dashboard"
               className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
             >
               <ArrowLeft className="size-4" />

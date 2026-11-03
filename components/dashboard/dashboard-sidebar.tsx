@@ -31,12 +31,12 @@ import { NotificationModal } from "../notification/notification";
 const navigation = [
   {
     title: "Dashboard",
-    url: "/dashboard",
+    url: "/student-client/dashboard",
     icon: LayoutDashboard,
   },
   {
     title: "New Complaint",
-    url: "/complaints/new",
+    url: "/student-client/complaints/new",
     icon: Plus,
   },
 ];
@@ -52,7 +52,7 @@ export function DashboardSidebar() {
   className="h-svh min-h-svh">
       <SidebarHeader className="border-none p-2 group-data-[collapsible=icon]:items-center">
         <Link
-          href="/dashboard"
+          href="/student-client/dashboard"
           className="flex items-center gap-3 px-2 py-1 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
         >
           <div className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-xl">
@@ -82,9 +82,9 @@ export function DashboardSidebar() {
             {navigation.map((item) => {
               const Icon = item.icon;
               const isActive =
-                item.url === "/dashboard"
-                  ? pathname === "/dashboard"
-                  : pathname === "/complaints/new";
+                item.url === "/student-client/dashboard"
+                  ? pathname === "/student-client/dashboard"
+                  : pathname === "/student-client/complaints/new";
 
               return (
                 <SidebarMenuItem key={item.title}>
@@ -115,10 +115,10 @@ export function DashboardSidebar() {
             <SidebarMenuItem>
               <SidebarMenuButton
                 
-                isActive={pathname === "/profile"}
+                isActive={pathname === "/student-client/profile"}
                 tooltip="Profile"
               >
-                <Link href="/profile" className="flex items-center gap-2.5">
+                <Link href="/student-client/profile" className="flex items-center gap-2.5">
                   <UserRound className="size-4 shrink-0" />
                   <span>Profile</span>
                 </Link>
@@ -128,11 +128,11 @@ export function DashboardSidebar() {
             <SidebarMenuItem>
               <SidebarMenuButton
                  onClick={() => setNotificationsOpen(true)}
-                isActive={pathname === "/notifications"}
+                isActive={pathname === "/student-client/notifications"}
                 tooltip="Notifications"
               >
                 <Link
-                  href="/notifications"
+                  href="/student-client/notifications"
                   className="flex items-center gap-2.5"
                 >
                   <Bell className="size-4 shrink-0" />
