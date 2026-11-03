@@ -5,16 +5,16 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   ArrowUpRight,
-  FileText,
-  MoreHorizontal,
-  Eye,
-  Trash2,
-  Search,
-  RefreshCw,
-  MapPin,
   CalendarDays,
-  Tag,
+  Eye,
+  FileText,
+  MapPin,
+  MoreHorizontal,
   Pencil,
+  RefreshCw,
+  Search,
+  Tag,
+  Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -23,6 +23,8 @@ import {
   deleteComplaintApi,
 } from "@/lib/api";
 
+import { UpdateComplaintDialog } from "@/components/complaints/update-complaint-dialog";
+import type { EditableComplaint } from "@/types/complaints/types";
 import { DeleteAlertDialog } from "@/components/shared/delete-alert-dialog";
 
 import { Button } from "@/components/ui/button";
@@ -59,16 +61,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-type Complaint = {
-  id: number;
-  title: string;
-  description?: string;
-  location?: string;
+type Complaint = EditableComplaint & {
   status: string;
+  createdAt?: string;
   category?: {
     name?: string;
+    slug?: string;
   };
-  createdAt?: string;
 };
 
 function getStatusStyles(status: string) {
@@ -88,7 +87,9 @@ function formatStatus(status: string) {
   return (
     status
       ?.split("_")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .map(
+        (word) => word.charAt(0).toUpperCase() + word.slice(1)
+      )
       .join(" ") || "Unknown"
   );
 }
@@ -115,6 +116,9 @@ export function RecentComplaints() {
   const [selectedComplaint, setSelectedComplaint] =
     useState<Complaint | null>(null);
 
+  const [complaintToUpdate, setComplaintToUpdate] =
+    useState<Complaint | null>(null);
+
   const [complaintToDelete, setComplaintToDelete] =
     useState<Complaint | null>(null);
 
@@ -137,14 +141,18 @@ export function RecentComplaints() {
       setComplaints(data);
     } catch (error) {
       console.error("Failed to fetch complaints:", error);
-      toast.error("Failed to load your complaints.");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to load your complaints."
+      );
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchComplaints();
+    void fetchComplaints();
   }, [fetchComplaints]);
 
   const filteredComplaints = useMemo(() => {
@@ -204,13 +212,13 @@ export function RecentComplaints() {
             </p>
           </div>
 
-          <Button  variant="ghost" size="sm" >
-            <Link href="/complaints">
-              View all
-              
-            </Link>
-            <ArrowUpRight className="ml-1 size-4" />
-          </Button>
+          <Link
+            href="/complaints"
+            className="inline-flex h-9 items-center justify-center gap-1 rounded-md px-3 text-sm font-medium transition-colors hover:bg-muted"
+          >
+            View all
+            <ArrowUpRight className="size-4" />
+          </Link>
         </CardHeader>
 
         <CardContent className="space-y-4">
@@ -222,7 +230,7 @@ export function RecentComplaints() {
               <Input
                 placeholder="Search your complaints..."
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(event) => setSearch(event.target.value)}
                 className="pl-9"
               />
             </div>
@@ -230,7 +238,7 @@ export function RecentComplaints() {
             <Button
               variant="outline"
               size="icon"
-              onClick={fetchComplaints}
+              onClick={() => void fetchComplaints()}
               disabled={loading}
               aria-label="Refresh complaints"
             >
@@ -249,7 +257,7 @@ export function RecentComplaints() {
                   <TableHead>Complaint</TableHead>
                   <TableHead>Category</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead className="hidden md:table-cell">
+                  <TableHead className="hidden whitespace-nowrap md:table-cell">
                     Created
                   </TableHead>
                   <TableHead className="w-[60px] text-right">
@@ -261,7 +269,10 @@ export function RecentComplaints() {
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="h-32 text-center">
+                    <TableCell
+                      colSpan={6}
+                      className="h-32 text-center"
+                    >
                       <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
                         <RefreshCw className="size-4 animate-spin" />
                         Loading complaints...
@@ -306,22 +317,19 @@ export function RecentComplaints() {
 
                       <TableCell className="text-right">
                         <DropdownMenu>
-                          {/* IMPORTANT: asChild prevents nested buttons */}
-                          <DropdownMenuTrigger >
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="size-8"
-                              aria-label="Complaint actions"
-                            >
-                              <MoreHorizontal className="size-4" />
-                            </Button>
+                          <DropdownMenuTrigger
+                            aria-label="Complaint actions"
+                            className="inline-flex size-8 items-center justify-center rounded-md transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          >
+                            <MoreHorizontal className="size-4" />
                           </DropdownMenuTrigger>
 
-                          <DropdownMenuContent align="end" className={"min-w-44"}>
-                            {/* View details */}
+                          <DropdownMenuContent
+                            align="end"
+                            className="min-w-44"
+                          >
                             <DropdownMenuItem
-                              onSelect={() => {
+                              onClick={() => {
                                 setSelectedComplaint(complaint);
                               }}
                             >
@@ -329,29 +337,27 @@ export function RecentComplaints() {
                               View details
                             </DropdownMenuItem>
 
-                            {/* Update complaint */}
-                            <DropdownMenuItem >
-                              <Link
-                                className="flex items-center gap-2"
-                                href={`/complaints/${complaint.id}/edit`}
+                              <DropdownMenuItem
+                              disabled={
+                            !["open", "rejected"].includes(complaint.status.toLowerCase())
+                            }
+                            onClick={() => setComplaintToUpdate(complaint)}
                               >
-                                <Pencil className="mr-2 size-4" />
-                                Update complaint
-                              </Link>
+                            <Pencil className="mr-2 size-4" />
+                                      Update complaint
                             </DropdownMenuItem>
 
                             <DropdownMenuSeparator />
 
-                            {/* Delete complaint */}
-                           <DropdownMenuItem
-  className="text-destructive focus:text-destructive"
-  onClick={() => {
-    setComplaintToDelete(complaint);
-  }}
->
-  <Trash2 className="mr-2 size-4" />
-  Delete complaint
-</DropdownMenuItem>
+                            <DropdownMenuItem
+                              className="text-destructive focus:text-destructive"
+                              onClick={() => {
+                                setComplaintToDelete(complaint);
+                              }}
+                            >
+                              <Trash2 className="mr-2 size-4" />
+                              Delete complaint
+                            </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
@@ -378,15 +384,12 @@ export function RecentComplaints() {
                         </p>
 
                         {!search && (
-                          <Button
-                            variant="outline"
-                            className="mt-4"
-                            
+                          <Link
+                            href="/complaints"
+                            className="mt-4 inline-flex h-9 items-center justify-center rounded-md border px-4 text-sm font-medium transition-colors hover:bg-muted"
                           >
-                            <Link href="/complaints">
-                              Open my complaints
-                            </Link>
-                          </Button>
+                            Open my complaints
+                          </Link>
                         )}
                       </div>
                     </TableCell>
@@ -414,9 +417,9 @@ export function RecentComplaints() {
         </CardContent>
       </Card>
 
-      {/* View details dialog */}
+      {/* View complaint dialog */}
       <Dialog
-        open={!!selectedComplaint}
+        open={selectedComplaint !== null}
         onOpenChange={(open) => {
           if (!open) setSelectedComplaint(null);
         }}
@@ -424,7 +427,6 @@ export function RecentComplaints() {
         <DialogContent className="sm:max-w-[480px]">
           <DialogHeader>
             <DialogTitle>Complaint details</DialogTitle>
-
             <DialogDescription>
               Review the information about your submitted complaint.
             </DialogDescription>
@@ -457,19 +459,26 @@ export function RecentComplaints() {
 
               <div className="space-y-3 rounded-lg border p-4">
                 <div className="flex items-center gap-3 text-sm">
-                  <MapPin className="size-4 text-muted-foreground" />
+                  <MapPin className="size-4 shrink-0 text-muted-foreground" />
                   <span>
                     {selectedComplaint.location || "No location provided"}
                   </span>
                 </div>
 
+                {selectedComplaint.building && (
+                  <div className="flex items-center gap-3 text-sm">
+                    <MapPin className="size-4 shrink-0 text-muted-foreground" />
+                    <span>{selectedComplaint.building}</span>
+                  </div>
+                )}
+
                 <div className="flex items-center gap-3 text-sm">
-                  <CalendarDays className="size-4 text-muted-foreground" />
+                  <CalendarDays className="size-4 shrink-0 text-muted-foreground" />
                   <span>{formatDate(selectedComplaint.createdAt)}</span>
                 </div>
 
                 <div className="flex items-center gap-3 text-sm">
-                  <Tag className="size-4 text-muted-foreground" />
+                  <Tag className="size-4 shrink-0 text-muted-foreground" />
                   <span>
                     {selectedComplaint.category?.name || "Uncategorized"}
                   </span>
@@ -477,9 +486,11 @@ export function RecentComplaints() {
               </div>
 
               <div>
-                <p className="mb-2 text-sm font-medium">Description</p>
+                <p className="mb-2 text-sm font-medium">
+                  Description
+                </p>
 
-                <p className="whitespace-pre-wrap text-sm leading-6 text-muted-foreground">
+                <p className="whitespace-pre-wrap break-words text-sm leading-6 text-muted-foreground">
                   {selectedComplaint.description ||
                     "No description available."}
                 </p>
@@ -489,9 +500,22 @@ export function RecentComplaints() {
         </DialogContent>
       </Dialog>
 
+      {/* Update complaint dialog */}
+      <UpdateComplaintDialog
+  complaint={complaintToUpdate}
+  open={complaintToUpdate !== null}
+  onOpenChange={(open) => {
+    if (!open) setComplaintToUpdate(null);
+  }}
+  onUpdated={async () => {
+    setComplaintToUpdate(null);
+    await fetchComplaints();
+  }}
+/>
+
       {/* Delete confirmation dialog */}
       <DeleteAlertDialog
-        open={!!complaintToDelete}
+        open={complaintToDelete !== null}
         onOpenChange={(open) => {
           if (!open && !deleting) {
             setComplaintToDelete(null);
