@@ -213,7 +213,7 @@ export function RecentComplaints() {
           </div>
 
           <Link
-            href="/complaints"
+            href="/student-client/complaints"
             className="inline-flex h-9 items-center justify-center gap-1 rounded-md px-3 text-sm font-medium transition-colors hover:bg-muted"
           >
             View all
@@ -407,7 +407,7 @@ export function RecentComplaints() {
               </span>
 
               <Link
-                href="/complaints"
+                href="/student-client/complaints"
                 className="font-medium text-foreground hover:underline"
               >
                 See all complaints

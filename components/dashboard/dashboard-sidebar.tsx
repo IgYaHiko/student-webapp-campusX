@@ -8,6 +8,8 @@ import {
   Bell,
   UserRound,
   LogOut,
+  LucideSpeaker,
+  PersonStanding,
 } from "lucide-react";
 import { useAuth } from "@/src/context/AuthContext";
 import {
@@ -38,6 +40,11 @@ const navigation = [
     title: "New Complaint",
     url: "/student-client/complaints/new",
     icon: Plus,
+  },
+  {
+    title: "All Complaint",
+    url: "/student-client/complaints",
+    icon: PersonStanding,
   },
 ];
 
