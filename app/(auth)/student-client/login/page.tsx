@@ -2,6 +2,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,10 +20,9 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import AuthLayout from "@/components/layouts/Authlayout";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-const LANDING_URL = process.env.NEXT_PUBLIC_LANDING_URL;
-
 export default function LoginPage() {
+  const router = useRouter();
+
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -41,77 +41,28 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      // 1. Authenticate student
       const res = await loginApi(data);
 
       if (res.user.role !== "student") {
         setError("Only students can use this portal.");
-        setIsLoading(false);
         return;
       }
 
-      // 2. Store student authentication in Student portal
       login(res.token, res.user);
-
-      // 3. Diagnose SSO configuration
-      console.log("SSO CONFIG DIAGNOSTICS:", {
-        API_URL_EXISTS: Boolean(API_URL),
-        LANDING_URL_EXISTS: Boolean(LANDING_URL),
-        LANDING_URL,
-      });
-
-      if (!API_URL || !LANDING_URL) {
-        const missing = [
-          !API_URL ? "NEXT_PUBLIC_API_URL" : null,
-          !LANDING_URL ? "NEXT_PUBLIC_LANDING_URL" : null,
-        ]
-          .filter(Boolean)
-          .join(", ");
-
-        throw new Error(`Missing configuration: ${missing}`);
-      }
-
-      // 4. Generate one-time handoff code
-      const handoffResponse = await fetch(
-        `${API_URL}/auth/handoff`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${res.token}`,
-            "Content-Type": "application/json",
-          },
-          cache: "no-store",
-        }
-      );
-
-      const handoffResult = await handoffResponse.json();
-
-      if (!handoffResponse.ok || !handoffResult.success) {
-        throw new Error(
-          handoffResult.message || "Unable to connect to SaySo."
-        );
-      }
-
-      const code = handoffResult.data.code;
-
-      // 5. Redirect to SaySo and exchange the one-time code
-      window.location.href =
-        `${LANDING_URL}/auth/callback?code=${encodeURIComponent(code)}`;
-
+      router.push("/student-client/dashboard");
     } catch (err: unknown) {
-      console.error("Student SSO login error:", err);
-
       setError(
         err instanceof Error
           ? err.message
           : "Something went wrong. Please try again."
       );
-
+    } finally {
       setIsLoading(false);
     }
   };
 
   const handleGoogleLogin = () => {
+    // Connect your Google OAuth flow here.
     setError("Google sign-in is not configured yet.");
   };
 
@@ -121,7 +72,7 @@ export default function LoginPage() {
       description="Enter your details to access your student account."
       footer={
         <>
-          <p>Don't have an account?</p>
+         <p>Don&apos;t have an account?</p>
           <Link
             href="/student-client/register"
             className="font-semibold text-primary underline-offset-4 hover:underline"
@@ -146,8 +97,9 @@ export default function LoginPage() {
           type="button"
           variant="ghost"
           onClick={handleGoogleLogin}
-          className="flex h-auto w-full items-center justify-center gap-3 px-4 py-3"
+           className="w-full flex items-center justify-center gap-3 px-4 py-3 h-auto "
         >
+          {/* Google Logo */}
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 48 48"
@@ -196,7 +148,7 @@ export default function LoginPage() {
             placeholder="you@college.edu"
             autoComplete="email"
             {...register("email")}
-            className="h-auto w-full border-none px-4 py-3"
+           className="w-full px-4 py-3 h-auto border-none"
             aria-invalid={!!errors.email}
           />
 
@@ -210,7 +162,10 @@ export default function LoginPage() {
         {/* Password */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label htmlFor="password" className="text-sm font-medium">
+            <Label
+              htmlFor="password"
+              className="text-sm font-medium"
+            >
               Password
             </Label>
 
@@ -228,7 +183,7 @@ export default function LoginPage() {
             placeholder="Enter your password"
             autoComplete="current-password"
             {...register("password")}
-            className="h-auto w-full border-none px-4 py-3"
+            className="w-full px-4 py-3 h-auto border-none"
             aria-invalid={!!errors.password}
           />
 
@@ -245,7 +200,7 @@ export default function LoginPage() {
           disabled={isLoading}
           className="h-12 w-full rounded-xl font-semibold transition-transform active:scale-[0.99]"
         >
-          {isLoading ? "Connecting to SaySo..." : "Sign In"}
+          {isLoading ? "Logging in..." : "Sign In"}
         </Button>
       </form>
     </AuthLayout>
