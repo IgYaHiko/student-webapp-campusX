@@ -15,12 +15,14 @@ const poppins = Poppins({
 
 export const metadata: Metadata = {
   title: "SaySo - Create Complaints",
-  description: "Campus Problem Resolution",
-   icons: {
-    icon: "/logo.png"
-  }
+  description: "A smarter way to report and resolve campus issues.",
+  authors: [{ name: "SaySo" }],
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/apple-icon.png",
+  },
 };
-
 export default function RootLayout({
   children,
 }: Readonly<{
