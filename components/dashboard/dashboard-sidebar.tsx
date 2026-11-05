@@ -59,7 +59,7 @@ export function DashboardSidebar() {
   className="h-svh min-h-svh">
       <SidebarHeader className="border-none p-2 group-data-[collapsible=icon]:items-center">
         <Link
-          href="/student-client/dashboard"
+          href="https://sayso-web-client.subhrokolay2-0df.workers.dev"
           className="flex items-center gap-3 px-2 py-1 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
         >
           <div className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-xl">

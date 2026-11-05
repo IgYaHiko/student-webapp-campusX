@@ -26,7 +26,7 @@ export default function AuthLayout({
       {/* Left Side: Deep Blue Gradient Branding */}
       <div className="hidden lg:flex lg:w-1/2 relative bg-[radial-gradient(ellipse_at_40%_5%,#93c5fd_0%,#3b82f6_22%,#1d4ed8_45%,#172554_70%,#020617_100%)] overflow-hidden">
         {/* Top Logo */}
-        <Link href="/" className="cursor-pointer">
+        <Link href="https://sayso-web-client.subhrokolay2-0df.workers.dev" className="cursor-pointer">
           <div className="absolute top-6 left-8 z-10 flex items-center gap-3">
             
 
