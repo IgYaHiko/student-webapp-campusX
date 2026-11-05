@@ -38,7 +38,7 @@ jobs:
       - name: Build Vinext for Cloudflare
         run: npm run build:vinext
         env:
-          NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
+          NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1
           NEXT_PUBLIC_LANDING_URL: https://sayso-web-client.subhrokolay2-0df.workers.dev
 
   deploy:
@@ -63,8 +63,8 @@ jobs:
       - name: Build Vinext for Cloudflare
         run: npm run build:vinext
         env:
-          NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
-          NEXT_PUBLIC_LANDING_URL: https://sayso-web-client.subhrokolay2-0df.workers.dev
+          NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1
+          NEXT_PUBLIC_LANDING_URL:  https://sayso-web-client.subhrokolay2-0df.workers.dev
 
       - name: Deploy to Cloudflare Workers
         run: npx cf deploy --prebuilt --mode production --worker student-webapp
