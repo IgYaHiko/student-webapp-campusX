@@ -39,7 +39,7 @@ jobs:
         run: npm run build:vinext
         env:
           NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
-          NEXT_PUBLIC_LANDING_URL: ${{ vars.NEXT_PUBLIC_LANDING_URL }}
+          NEXT_PUBLIC_LANDING_URL: https://sayso-web-client.subhrokolay2-0df.workers.dev
 
   deploy:
     name: Deploy to Cloudflare Workers
@@ -64,7 +64,7 @@ jobs:
         run: npm run build:vinext
         env:
           NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
-          NEXT_PUBLIC_LANDING_URL: ${{ vars.NEXT_PUBLIC_LANDING_URL }}
+          NEXT_PUBLIC_LANDING_URL: https://sayso-web-client.subhrokolay2-0df.workers.dev
 
       - name: Deploy to Cloudflare Workers
         run: npx cf deploy --prebuilt --mode production --worker student-webapp
