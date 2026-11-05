@@ -2,7 +2,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -24,8 +23,6 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 const LANDING_URL = process.env.NEXT_PUBLIC_LANDING_URL;
 
 export default function LoginPage() {
-  const router = useRouter();
-
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -49,15 +46,29 @@ export default function LoginPage() {
 
       if (res.user.role !== "student") {
         setError("Only students can use this portal.");
+        setIsLoading(false);
         return;
       }
 
       // 2. Store student authentication in Student portal
       login(res.token, res.user);
 
-      // 3. Validate handoff configuration
+      // 3. Diagnose SSO configuration
+      console.log("SSO CONFIG DIAGNOSTICS:", {
+        API_URL_EXISTS: Boolean(API_URL),
+        LANDING_URL_EXISTS: Boolean(LANDING_URL),
+        LANDING_URL,
+      });
+
       if (!API_URL || !LANDING_URL) {
-        throw new Error("SaySo authentication configuration is missing.");
+        const missing = [
+          !API_URL ? "NEXT_PUBLIC_API_URL" : null,
+          !LANDING_URL ? "NEXT_PUBLIC_LANDING_URL" : null,
+        ]
+          .filter(Boolean)
+          .join(", ");
+
+        throw new Error(`Missing configuration: ${missing}`);
       }
 
       // 4. Generate one-time handoff code
@@ -88,6 +99,8 @@ export default function LoginPage() {
         `${LANDING_URL}/auth/callback?code=${encodeURIComponent(code)}`;
 
     } catch (err: unknown) {
+      console.error("Student SSO login error:", err);
+
       setError(
         err instanceof Error
           ? err.message
