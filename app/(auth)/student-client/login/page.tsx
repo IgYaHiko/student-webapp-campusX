@@ -20,6 +20,9 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import AuthLayout from "@/components/layouts/Authlayout";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const LANDING_URL = process.env.NEXT_PUBLIC_LANDING_URL;
+
 export default function LoginPage() {
   const router = useRouter();
 
@@ -41,6 +44,7 @@ export default function LoginPage() {
     setError(null);
 
     try {
+      // 1. Authenticate student
       const res = await loginApi(data);
 
       if (res.user.role !== "student") {
@@ -48,21 +52,53 @@ export default function LoginPage() {
         return;
       }
 
+      // 2. Store student authentication in Student portal
       login(res.token, res.user);
-      router.push("/student-client/dashboard");
+
+      // 3. Validate handoff configuration
+      if (!API_URL || !LANDING_URL) {
+        throw new Error("SaySo authentication configuration is missing.");
+      }
+
+      // 4. Generate one-time handoff code
+      const handoffResponse = await fetch(
+        `${API_URL}/auth/handoff`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${res.token}`,
+            "Content-Type": "application/json",
+          },
+          cache: "no-store",
+        }
+      );
+
+      const handoffResult = await handoffResponse.json();
+
+      if (!handoffResponse.ok || !handoffResult.success) {
+        throw new Error(
+          handoffResult.message || "Unable to connect to SaySo."
+        );
+      }
+
+      const code = handoffResult.data.code;
+
+      // 5. Redirect to SaySo and exchange the one-time code
+      window.location.href =
+        `${LANDING_URL}/auth/callback?code=${encodeURIComponent(code)}`;
+
     } catch (err: unknown) {
       setError(
         err instanceof Error
           ? err.message
           : "Something went wrong. Please try again."
       );
-    } finally {
+
       setIsLoading(false);
     }
   };
 
   const handleGoogleLogin = () => {
-    // Connect your Google OAuth flow here.
     setError("Google sign-in is not configured yet.");
   };
 
@@ -72,7 +108,7 @@ export default function LoginPage() {
       description="Enter your details to access your student account."
       footer={
         <>
-         <p>Don&apos;t have an account?</p>
+          <p>Don't have an account?</p>
           <Link
             href="/student-client/register"
             className="font-semibold text-primary underline-offset-4 hover:underline"
@@ -97,9 +133,8 @@ export default function LoginPage() {
           type="button"
           variant="ghost"
           onClick={handleGoogleLogin}
-           className="w-full flex items-center justify-center gap-3 px-4 py-3 h-auto "
+          className="flex h-auto w-full items-center justify-center gap-3 px-4 py-3"
         >
-          {/* Google Logo */}
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 48 48"
@@ -148,7 +183,7 @@ export default function LoginPage() {
             placeholder="you@college.edu"
             autoComplete="email"
             {...register("email")}
-           className="w-full px-4 py-3 h-auto border-none"
+            className="h-auto w-full border-none px-4 py-3"
             aria-invalid={!!errors.email}
           />
 
@@ -162,10 +197,7 @@ export default function LoginPage() {
         {/* Password */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label
-              htmlFor="password"
-              className="text-sm font-medium"
-            >
+            <Label htmlFor="password" className="text-sm font-medium">
               Password
             </Label>
 
@@ -183,7 +215,7 @@ export default function LoginPage() {
             placeholder="Enter your password"
             autoComplete="current-password"
             {...register("password")}
-            className="w-full px-4 py-3 h-auto border-none"
+            className="h-auto w-full border-none px-4 py-3"
             aria-invalid={!!errors.password}
           />
 
@@ -200,7 +232,7 @@ export default function LoginPage() {
           disabled={isLoading}
           className="h-12 w-full rounded-xl font-semibold transition-transform active:scale-[0.99]"
         >
-          {isLoading ? "Logging in..." : "Sign In"}
+          {isLoading ? "Connecting to SaySo..." : "Sign In"}
         </Button>
       </form>
     </AuthLayout>
