@@ -10,6 +10,7 @@ import {
 
 import { DashboardSidebar } from "./dashboard-sidebar";
 import { DashboardNavbar } from "./dashboard-navbar";
+import { SaySayWidget } from "@/components/sayso-bot/SaySayWidget";
 
 export function DashboardLayout({
   children,
@@ -39,6 +40,9 @@ export function DashboardLayout({
           </div>
         </main>
       </SidebarInset>
+
+      {/* CampusX AI Assistant */}
+      <SaySayWidget />
     </SidebarProvider>
   );
 }

@@ -1,3 +1,4 @@
+import { ChatApiResponse, ChatHistoryMessage, ChatHistoryResponse } from "@/types/chat/type";
 import { UpdateComplaintPayload } from "@/types/complaints/types";
 import { toast } from "sonner";
 import { json } from "zod";
@@ -165,4 +166,80 @@ export async function updateComplaintApi(
   }
 
   return json;
+}
+
+
+
+export async function sendChatMessage(query: string): Promise<string> {
+  const token = getToken();
+
+  if (!token) {
+    throw new Error("Your session has expired. Please sign in again.");
+  }
+
+  let response: Response;
+
+  try {
+    response = await fetch(`${API_URL}/chat`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ query }),
+    });
+  } catch {
+    throw new Error("Unable to reach the CampusX server. Please try again.");
+  }
+
+  const data = (await response.json().catch(() => null)) as ChatApiResponse | null;
+
+  if (!response.ok) {
+    throw new Error(
+      data?.message || `Chat request failed with status ${response.status}.`
+    );
+  }
+
+  if (!data || typeof data.answer !== "string" || !data.answer.trim()) {
+    throw new Error("The chat server returned an invalid response.");
+  }
+
+  return data.answer;
+}
+
+
+
+
+export async function getChatHistory(): Promise<ChatHistoryMessage[]> {
+  const token = getToken();
+
+  if (!token) {
+    throw new Error("Your session has expired. Please sign in again.");
+  }
+
+  const response = await fetch(`${API_URL}/chat/history`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    cache: "no-store",
+  });
+
+  const json = await response.json();
+
+  if (!response.ok) {
+    throw new Error(json.message || "Failed to fetch chat history");
+  }
+
+  const data = json.data;
+
+  const messages = Array.isArray(data)
+    ? data
+    : data?.messages;
+
+  if (!Array.isArray(messages)) {
+    throw new Error("Invalid chat history response from server.");
+  }
+
+  return messages;
 }
