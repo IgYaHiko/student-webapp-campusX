@@ -50,7 +50,6 @@
   "devDependencies": {
     "@cloudflare/vite-plugin": "^2.0.0-beta.v.7",
     "@tailwindcss/postcss": "^4.3.3",
-    "@tailwindcss/turbopack": "^4",
     "@types/js-cookie": "^3.0.6",
     "@types/node": "^20",
     "@types/react": "^19",

@@ -20,26 +20,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
 
-      # 3. Install dependencies
       - name: Install dependencies
         run: npm ci --include=optional
 
-      # 4. TypeScript check
       - name: TypeScript check
         run: npx tsc --noEmit
 
-      # 5. Build Vinext
       - name: Build Vinext for Cloudflare
         run: npm run build:vinext
         env:
@@ -53,41 +48,47 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
 
-      # 3. Install dependencies
       - name: Install dependencies
         run: npm ci --include=optional
 
-      # 4. Validate production configuration
       - name: Verify production configuration
         env:
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           if [ -z "$NEXT_PUBLIC_API_URL" ]; then
             echo "::error::NEXT_PUBLIC_API_URL is missing from GitHub Secrets"
             exit 1
           fi
 
-          echo "SUCCESS: NEXT_PUBLIC_API_URL is configured"
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "::error::CLOUDFLARE_API_TOKEN is missing from GitHub Secrets"
+            exit 1
+          fi
 
-      # 5. Build Vinext
+          if [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "::error::CLOUDFLARE_ACCOUNT_ID is missing from GitHub Variables"
+            exit 1
+          fi
+
+          echo "Production configuration verified."
+
       - name: Build Vinext for Cloudflare
         run: npm run build:vinext
         env:
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
           NEXT_PUBLIC_LANDING_URL: https://sayso-web-client.subhrokolay2-0df.workers.dev
 
-      # 6. Deploy
       - name: Deploy to Cloudflare Workers
         run: npx cf deploy --prebuilt --mode production --worker student-webapp
         env:
